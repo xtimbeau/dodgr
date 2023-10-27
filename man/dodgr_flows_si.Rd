@@ -14,7 +14,7 @@ dodgr_flows_si(
   contract = TRUE,
   norm_sums = TRUE,
   heap = "BHeap",
-  tol = 0.000000000001,
+  tol = 1e-12,
   quiet = TRUE
 )
 }
@@ -120,6 +120,7 @@ Other distances:
 \code{\link{dodgr_distances}()},
 \code{\link{dodgr_dists_categorical}()},
 \code{\link{dodgr_dists_nearest}()},
+\code{\link{dodgr_dists_pre}()},
 \code{\link{dodgr_dists}()},
 \code{\link{dodgr_flows_aggregate}()},
 \code{\link{dodgr_flows_disperse}()},

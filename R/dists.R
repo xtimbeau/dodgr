@@ -117,65 +117,65 @@ dodgr_dists <- function (graph,
                          heap = "BHeap",
                          parallel = TRUE,
                          quiet = TRUE) {
-
-    graph <- tbl_to_df (graph)
-
-    hps <- get_heap (heap, graph)
-    heap <- hps$heap
-    graph <- hps$graph
-
-    graph <- preprocess_spatial_cols (graph)
-    gr_cols <- dodgr_graph_cols (graph)
-    is_spatial <- is_graph_spatial (graph)
-    to_from_indices <- to_from_index_with_tp (graph, from, to)
-    if (to_from_indices$compound) {
-        graph <- to_from_indices$graph_compound
+  graph <- tbl_to_df (graph)
+  
+  hps <- get_heap (heap, graph)
+  heap <- hps$heap
+  graph <- hps$graph
+  
+  graph <- preprocess_spatial_cols (graph)
+  gr_cols <- dodgr_graph_cols (graph)
+  is_spatial <- is_graph_spatial (graph)
+  to_from_indices <- to_from_index_with_tp (graph, from, to)
+  if (to_from_indices$compound) {
+    graph <- to_from_indices$graph_compound
+  }
+  
+  if (!shortest) {
+    if (is.na (gr_cols$time_weighted)) {
+      stop (
+        "Graph does not contain a weighted time column from ",
+        "which to calculate fastest paths."
+      )
     }
-
-    if (!shortest) {
-        if (is.na (gr_cols$time_weighted)) {
-            stop (
-                "Graph does not contain a weighted time column from ",
-                "which to calculate fastest paths."
-            )
-        }
-        graph [[gr_cols$d_weighted]] <- graph [[gr_cols$time_weighted]]
-    }
-
-    graph <- convert_graph (graph, gr_cols)
-
+    graph [[gr_cols$d_weighted]] <- graph [[gr_cols$time_weighted]]
+  }
+  
+  graph <- convert_graph (graph, gr_cols)
+  
+  if (!quiet) {
+    message ("Calculating shortest paths ... ", appendLF = FALSE)
+  }
+  
+  if (parallel && heap == "TriHeapExt") {
     if (!quiet) {
-        message ("Calculating shortest paths ... ", appendLF = FALSE)
+      message (
+        "Extended TriHeaps can not be calculated in parallel; ",
+        "reverting to serial calculation"
+      )
     }
-
-    if (parallel && heap == "TriHeapExt") {
-        if (!quiet) {
-            message (
-                "Extended TriHeaps can not be calculated in parallel; ",
-                "reverting to serial calculation"
-            )
-        }
-        parallel <- FALSE
-    }
-
-    d <- calculate_distmat (
-        graph,
-        to_from_indices$vert_map,
-        to_from_indices$from,
-        to_from_indices$to,
-        heap,
-        is_spatial,
-        parallel,
-        pairwise
-    )
-
-
-    if (!quiet) {
-        message ("done.")
-    }
-
-    return (d)
+    parallel <- FALSE
+  }
+  d <- calculate_distmat (
+    graph,
+    to_from_indices$vert_map,
+    to_from_indices$from,
+    to_from_indices$to,
+    heap,
+    is_spatial,
+    parallel,
+    pairwise
+  )
+  
+  
+  if (!quiet) {
+    message ("done.")
+  }
+  
+  return (d)
 }
+
+
 
 #' Calculate matrix of pair-wise distances between points.
 #'
@@ -191,16 +191,16 @@ dodgr_distances <- function (graph,
                              heap = "BHeap",
                              parallel = TRUE,
                              quiet = TRUE) {
-
-    dodgr_dists (graph,
-        from,
-        to,
-        shortest = shortest,
-        pairwise = pairwise,
-        heap = heap,
-        parallel = parallel,
-        quiet = quiet
-    )
+  
+  dodgr_dists (graph,
+               from,
+               to,
+               shortest = shortest,
+               pairwise = pairwise,
+               heap = heap,
+               parallel = parallel,
+               quiet = quiet
+  )
 }
 
 #' Get an index of `pts` matching `vert_map`.
@@ -214,38 +214,38 @@ get_index_id_cols <- function (graph,
                                gr_cols,
                                vert_map,
                                pts) {
-
-    index <- -1
-    id <- NULL
-    if (!missing (pts)) {
-        if (is.integer (pts) && is.vector (pts)) {
-            index <- pts
-        } else if (is.character (pts) ||
-            is.numeric (pts) ||
-            is.matrix (pts) ||
-            is.data.frame (pts)) {
-            index <- get_pts_index (graph, gr_cols, vert_map, pts)
-        } else {
-            stop (
-                "routing points are of unknown form; must be either ",
-                "character, matrix, or integer"
-            )
-        }
-
-        if (length (pts == 2) && is.numeric (pts) &&
-            ((any (grepl ("x", names (pts), ignore.case = TRUE)) &&
-                any (grepl ("y", names (pts), ignore.case = TRUE))) ||
-                (any (grepl ("lon", names (pts), ignore.case = TRUE) &&
-                    (any (grepl ("lat", names (pts), ignore.case = TRUE))))))) {
-            names (pts) <- NULL
-        }
-
-        id <- get_id_cols (pts)
-        if (is.null (id)) {
-            id <- vert_map$vert [index]
-        } # index is 1-based
+  
+  index <- -1
+  id <- NULL
+  if (!missing (pts)) {
+    if (is.integer (pts) && is.vector (pts)) {
+      index <- pts
+    } else if (is.character (pts) ||
+               is.numeric (pts) ||
+               is.matrix (pts) ||
+               is.data.frame (pts)) {
+      index <- get_pts_index (graph, gr_cols, vert_map, pts)
+    } else {
+      stop (
+        "routing points are of unknown form; must be either ",
+        "character, matrix, or integer"
+      )
     }
-    list (index = index, id = id)
+    
+    if (length (pts == 2) && is.numeric (pts) &&
+        ((any (grepl ("x", names (pts), ignore.case = TRUE)) &&
+          any (grepl ("y", names (pts), ignore.case = TRUE))) ||
+         (any (grepl ("lon", names (pts), ignore.case = TRUE) &&
+               (any (grepl ("lat", names (pts), ignore.case = TRUE))))))) {
+      names (pts) <- NULL
+    }
+    
+    id <- get_id_cols (pts)
+    if (is.null (id)) {
+      id <- vert_map$vert [index]
+    } # index is 1-based
+  }
+  list (index = index, id = id)
 }
 
 
@@ -255,21 +255,21 @@ get_index_id_cols <- function (graph,
 #' @return Character vector of names of points, if they exist in `pts`
 #' @noRd
 get_id_cols <- function (pts) {
-
-    ids <- NULL
-    if (any (grepl ("id", colnames (pts), ignore.case = TRUE))) {
-        nmc <- which (grepl ("id", colnames (pts)))
-        if (methods::is (pts, "data.frame")) {
-            ids <- pts [[nmc]]
-        } else if (is.matrix (pts)) {
-            ids <- pts [, nmc, drop = TRUE]
-        }
-    } else if (is.vector (pts) && !is.null (names (pts))) {
-        ids <- names (pts)
-    } else if (!is.null (rownames (pts))) {
-        ids <- rownames (pts)
+  
+  ids <- NULL
+  if (any (grepl ("id", colnames (pts), ignore.case = TRUE))) {
+    nmc <- which (grepl ("id", colnames (pts)))
+    if (methods::is (pts, "data.frame")) {
+      ids <- pts [[nmc]]
+    } else if (is.matrix (pts)) {
+      ids <- pts [, nmc, drop = TRUE]
     }
-    return (ids)
+  } else if (is.vector (pts) && !is.null (names (pts))) {
+    ids <- names (pts)
+  } else if (!is.null (rownames (pts))) {
+    ids <- rownames (pts)
+  }
+  return (ids)
 }
 
 #' Map unique vertex names to sequential numbers in matrix
@@ -278,29 +278,29 @@ get_id_cols <- function (pts) {
 make_vert_map <- function (graph,
                            gr_cols,
                            xy = FALSE) {
-
-    # gr_cols are (edge_id, from, to, d, w, component, xfr, yfr, xto, yto)
-    verts <- c (paste0 (graph [[gr_cols$from]]), paste0 (graph [[gr_cols$to]]))
-    indx <- which (!duplicated (verts))
-    if (!xy) {
-        # Note id has to be 0-indexed:
-        res <- data.frame (
-            vert = paste0 (verts [indx]),
-            id = seq (indx) - 1,
-            stringsAsFactors = FALSE
-        )
-    } else {
-        verts_x <- c (graph [[gr_cols$xfr]], graph [[gr_cols$xto]])
-        verts_y <- c (graph [[gr_cols$yfr]], graph [[gr_cols$yto]])
-        res <- data.frame (
-            vert = paste0 (verts [indx]),
-            id = seq (indx) - 1,
-            x = verts_x [indx],
-            y = verts_y [indx],
-            stringsAsFactors = FALSE
-        )
-    }
-    return (res)
+  
+  # gr_cols are (edge_id, from, to, d, w, component, xfr, yfr, xto, yto)
+  verts <- c (paste0 (graph [[gr_cols$from]]), paste0 (graph [[gr_cols$to]]))
+  indx <- which (!duplicated (verts))
+  if (!xy) {
+    # Note id has to be 0-indexed:
+    res <- data.frame (
+      vert = paste0 (verts [indx]),
+      id = seq (indx) - 1,
+      stringsAsFactors = FALSE
+    )
+  } else {
+    verts_x <- c (graph [[gr_cols$xfr]], graph [[gr_cols$xto]])
+    verts_y <- c (graph [[gr_cols$yfr]], graph [[gr_cols$yto]])
+    res <- data.frame (
+      vert = paste0 (verts [indx]),
+      id = seq (indx) - 1,
+      x = verts_x [indx],
+      y = verts_y [indx],
+      stringsAsFactors = FALSE
+    )
+  }
+  return (res)
 }
 
 #' Convert `from` or `to` args of \link{dodgr_dists} to indices into
@@ -319,95 +319,95 @@ get_pts_index <- function (graph,
                            gr_cols,
                            vert_map,
                            pts) {
-
-    if (!(is.matrix (pts) || is.data.frame (pts))) {
-        if (!is.numeric (pts)) {
-            pts <- matrix (pts, ncol = 1)
-        } else {
-            nms <- names (pts)
-            if (is.null (nms)) {
-                nms <- c ("x", "y")
-            }
-            pts <- matrix (pts, nrow = 1) # vector of (x,y) vals
-            colnames (pts) <- nms
-        }
-    }
-
-    if (ncol (pts) == 1) {
-
-        pts <- get_pts_index_vec (pts, vert_map)
-
+  
+  if (!(is.matrix (pts) || is.data.frame (pts))) {
+    if (!is.numeric (pts)) {
+      pts <- matrix (pts, ncol = 1)
     } else {
-
-        pts <- get_pts_index_rect (pts, graph, gr_cols)
+      nms <- names (pts)
+      if (is.null (nms)) {
+        nms <- c ("x", "y")
+      }
+      pts <- matrix (pts, nrow = 1) # vector of (x,y) vals
+      colnames (pts) <- nms
     }
-
-    pts
+  }
+  
+  if (ncol (pts) == 1) {
+    
+    pts <- get_pts_index_vec (pts, vert_map)
+    
+  } else {
+    
+    pts <- get_pts_index_rect (pts, graph, gr_cols)
+  }
+  
+  pts
 }
 
 get_pts_index_vec <- function (pts, vert_map) {
-
-    pts <- pts [, 1]
-
-    if (!is.numeric (pts)) {
-
-        indx <- match (pts, vert_map$vert)
-
-        if (any (is.na (indx))) {
-            stop (paste0 (
-                "from/to are not numeric yet can not be",
-                " matched onto graph vertices"
-            ))
-        }
-        pts <- indx
+  
+  pts <- pts [, 1]
+  
+  if (!is.numeric (pts)) {
+    
+    indx <- match (pts, vert_map$vert)
+    
+    if (any (is.na (indx))) {
+      stop (paste0 (
+        "from/to are not numeric yet can not be",
+        " matched onto graph vertices"
+      ))
     }
-
-    if (any (pts < 1 | pts > nrow (vert_map))) {
-        stop (paste0 ("points exceed numbers of vertices"))
-    }
-
-    return (pts)
+    pts <- indx
+  }
+  
+  if (any (pts < 1 | pts > nrow (vert_map))) {
+    stop (paste0 ("points exceed numbers of vertices"))
+  }
+  
+  return (pts)
 }
 
 get_pts_index_rect <- function (pts, graph, gr_cols) {
-
-    nms <- names (pts)
-    if (is.null (nms)) {
-        nms <- colnames (pts)
-    }
-
-    ix <- which (grepl ("x", nms, ignore.case = TRUE) |
-        grepl ("lon", nms, ignore.case = TRUE))
-    iy <- which (grepl ("y", nms, ignore.case = TRUE) |
-        grepl ("lat", nms, ignore.case = TRUE))
-
-    if (length (ix) != 1 || length (iy) != 1) {
-        stop (paste0 (
-            "Unable to determine geographical ",
-            "coordinates in from/to"
-        ))
-    }
-
-    index <- match (c ("xfr", "yfr", "xto", "yto"), names (gr_cols))
-    if (any (is.na (gr_cols [index]))) {
-        stop (paste0 (
-            "Cannot determine geographical coordinates ",
-            "against which to match pts"
-        ))
-    }
-
-    if (is.data.frame (pts)) {
-        names (pts) [ix] <- "x"
-        names (pts) [iy] <- "y"
-    } else {
-        colnames (pts) [ix] <- "x"
-        colnames (pts) [iy] <- "y"
-    }
-
-    # Result of rcpp_points_index is 0-indexed for C++
-    pts <- rcpp_points_index_par (dodgr_vertices (graph), pts) + 1
-
-    return (pts)
+  
+  nms <- names (pts)
+  if (is.null (nms)) {
+    nms <- colnames (pts)
+  }
+  
+  ix <- which (grepl ("x", nms, ignore.case = TRUE) |
+                 grepl ("lon", nms, ignore.case = TRUE))
+  iy <- which (grepl ("y", nms, ignore.case = TRUE) |
+                 grepl ("lat", nms, ignore.case = TRUE))
+  
+  if (length (ix) != 1 || length (iy) != 1) {
+    stop (paste0 (
+      "Unable to determine geographical ",
+      "coordinates in from/to"
+    ))
+  }
+  
+  index <- match (c ("xfr", "yfr", "xto", "yto"), names (gr_cols))
+  if (any (is.na (gr_cols [index]))) {
+    stop (paste0 (
+      "Cannot determine geographical coordinates ",
+      "against which to match pts"
+    ))
+  }
+  
+  if (is.data.frame (pts)) {
+    names (pts) [ix] <- "x"
+    names (pts) [iy] <- "y"
+  } else {
+    colnames (pts) [ix] <- "x"
+    colnames (pts) [iy] <- "y"
+  }
+  
+  # Result of rcpp_points_index is 0-indexed for C++
+  pts <- rcpp_points_index_par (dodgr_vertices (graph), pts) + 1
+  
+  return (pts)
 }
 
 # nocov start
@@ -426,33 +426,33 @@ graph_from_pts <- function (from,
                             expand = 0.1,
                             wt_profile = "bicycle",
                             quiet = TRUE) {
-
-    if (!quiet) {
-        message (
-            paste0 (
-                "No graph submitted to dodgr_dists; ",
-                "downloading street network ... "
-            ),
-            appendLF = FALSE
-        )
-    }
-
-    pts <- NULL
-    if (!missing (from)) {
-        pts <- from
-    }
-    if (!missing (to)) {
-        pts <- rbind (pts, to)
-    }
-    pts <- pts [which (!duplicated (pts)), ]
-    graph <- dodgr_streetnet (pts = pts, expand = expand) %>%
-        weight_streetnet (wt_profile = wt_profile)
-
-    if (!quiet) {
-        message ("done")
-    }
-
-    return (graph)
+  
+  if (!quiet) {
+    message (
+      paste0 (
+        "No graph submitted to dodgr_dists; ",
+        "downloading street network ... "
+      ),
+      appendLF = FALSE
+    )
+  }
+  
+  pts <- NULL
+  if (!missing (from)) {
+    pts <- from
+  }
+  if (!missing (to)) {
+    pts <- rbind (pts, to)
+  }
+  pts <- pts [which (!duplicated (pts)), ]
+  graph <- dodgr_streetnet (pts = pts, expand = expand) %>%
+    weight_streetnet (wt_profile = wt_profile)
+  
+  if (!quiet) {
+    message ("done")
+  }
+  
+  return (graph)
 }
 
 # nocov end
@@ -463,13 +463,13 @@ graph_from_pts <- function (from,
 #' just needs to switch from and to vertex columns.
 #' @noRd
 flip_graph <- function (graph) {
-
-    grcols <- dodgr_graph_cols (graph)
-    fr_temp <- graph [[grcols$from]]
-    graph [[grcols$from]] <- graph [[grcols$to]]
-    graph [[grcols$to]] <- fr_temp
-
-    return (graph)
+  
+  grcols <- dodgr_graph_cols (graph)
+  fr_temp <- graph [[grcols$from]]
+  graph [[grcols$from]] <- graph [[grcols$to]]
+  graph [[grcols$to]] <- fr_temp
+  
+  return (graph)
 }
 
 #' Call the actual C++ functions to calculate and return distance matrices
@@ -482,68 +482,69 @@ calculate_distmat <- function (graph,
                                is_spatial,
                                parallel = TRUE,
                                pairwise = FALSE) {
-
-    flip <- FALSE
-    if (length (from_index$index) > length (to_index$index)) {
-        flip <- TRUE
-        graph <- flip_graph (graph)
-        temp <- from_index
-        from_index <- to_index
-        to_index <- temp
-    }
-
-    if (parallel) {
-        if (pairwise) {
-            d <- rcpp_get_sp_dists_paired_par (
-                graph,
-                vert_map,
-                from_index$index,
-                to_index$index,
-                heap,
-                is_spatial
-            )
-        } else {
-            d <- rcpp_get_sp_dists_par (
-                graph,
-                vert_map,
-                from_index$index,
-                to_index$index,
-                heap,
-                is_spatial
-            )
-        }
+  
+  flip <- FALSE
+  if (length (from_index$index) > length (to_index$index)) {
+    flip <- TRUE
+    graph <- flip_graph (graph)
+    temp <- from_index
+    from_index <- to_index
+    to_index <- temp
+  }
+  
+  if (parallel) {
+    if (pairwise) {
+      d <- rcpp_get_sp_dists_paired_par (
+        graph,
+        vert_map,
+        from_index$index,
+        to_index$index,
+        heap,
+        is_spatial
+      )
     } else {
-        d <- rcpp_get_sp_dists (
-            graph,
-            vert_map,
-            from_index$index,
-            to_index$index,
-            heap
-        )
+      
+      d <- rcpp_get_sp_dists_par (
+        graph,
+        vert_map,
+        from_index$index,
+        to_index$index,
+        heap,
+        is_spatial
+      )
     }
-
-    if (!pairwise) {
-        if (!is.null (from_index$id)) {
-            rownames (d) <- from_index$id
-        } else {
-            rownames (d) <- vert_map$vert
-        }
-        if (!is.null (to_index$id)) {
-            colnames (d) <- to_index$id
-        } else {
-            colnames (d) <- vert_map$vert
-        }
-
-        if (get_turn_penalty (graph) > 0) {
-
-            rownames (d) <- gsub ("\\_(start|end)$", "", rownames (d))
-            colnames (d) <- gsub ("\\_(start|end)$", "", colnames (d))
-        }
-
-        if (flip) {
-            d <- t (d)
-        }
+  } else {
+    d <- rcpp_get_sp_dists (
+      graph,
+      vert_map,
+      from_index$index,
+      to_index$index,
+      heap
+    )
+  }
+  
+  if (!pairwise) {
+    if (!is.null (from_index$id)) {
+      rownames (d) <- from_index$id
+    } else {
+      rownames (d) <- vert_map$vert
     }
-
-    return (d)
+    if (!is.null (to_index$id)) {
+      colnames (d) <- to_index$id
+    } else {
+      colnames (d) <- vert_map$vert
+    }
+    
+    if (get_turn_penalty (graph) > 0) {
+      
+      rownames (d) <- gsub ("\\_(start|end)$", "", rownames (d))
+      colnames (d) <- gsub ("\\_(start|end)$", "", colnames (d))
+    }
+    
+    if (flip) {
+      d <- t (d)
+    }
+  }
+  
+  return (d)
 }
