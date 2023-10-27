@@ -290,6 +290,12 @@ process_graph <- function(graph, heap = "BHeap") {
   compound <- (get_turn_penalty (graph) > 0.0)
   vert_map_compound <- graph_compound <- compound_junction_map <- NULL
   
+  keep <- c(".vx0", ".vx1", "edge_", 
+            ".vx0_x", ".vx0_y",
+            ".vx1_x", ".vx1_y", 
+            "d", "dz", "time",
+            "d_weighted", "time_weighted", "component")
+  
   if (compound) {
     if (methods::is (graph, "dodgr_contracted")) {
       warning (
@@ -303,15 +309,12 @@ process_graph <- function(graph, heap = "BHeap") {
     compound_junction_map <- res$edge_map
     
     vert_map_compound <- make_vert_map (graph_compound, gr_cols, is_spatial)
+    
+    graph_compound <- graph_compound[keep]
+  } else {
+    graph_compound <- graph[keep]
   }
-  # on nettoie les graphes
-  keep <- c(".vx0", ".vx1", "edge_", 
-            ".vx0_x", ".vx0_y",
-            ".vx1_x", ".vx1_y", 
-            "d", "dz", "time",
-            "d_weighted", "time_weighted", "component")
   
-  graph_compound <- graph_compound[keep]
   gr_cols <- dodgr_graph_cols (graph_compound)
   
   return(list(
