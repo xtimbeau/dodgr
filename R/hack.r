@@ -21,6 +21,7 @@
 #' @param parallel If `TRUE`, perform routing calculation in parallel (see
 #' details)
 #' @param quiet If `FALSE`, display progress messages on screen.
+#' @param to_from_indices (NULL) si non nul, remplace to/from et prend le racourci
 #' @return square matrix of distances between nodes
 #'
 #'
@@ -33,9 +34,11 @@ dodgr_dists_pre <- function (proc_g,
                              shortest = TRUE,
                              pairwise = FALSE,
                              parallel = TRUE,
-                             quiet = TRUE) {
+                             quiet = TRUE,
+                             to_from_indices = NULL) {
   # tictoc::tic()
-  to_from_indices <- to_from_index_with_tp_pre(proc_g, from, to)
+  if(is.null(to_from_indices))
+    to_from_indices <- to_from_index_with_tp_pre(proc_g, from, to)
   
   if (proc_g$compound) {
     graph <- proc_g$graph_compound
@@ -113,14 +116,38 @@ to_from_index_with_tp_pre <- function (fgraph, from, to) {
   return (list (from = from_index, to = to_index))
 }
 
+
+#' Get lists of 'from' and 'to' indices, potentially mapped on to compound
+#' junctions for graphs with turn penalties.
+#'
+#' This function calls the following `fill_to_from_index` to generate the actual
+#' values. For graphs with turn penalties, it also returns the modified version
+#' of the graph including compound junctions.
+#' @noRd
+to_from_index_with_tp_pre <- function (fgraph, from, to) {
+  vert_map <- fgraph$vert_map
+  from_index <-
+    fill_to_from_index_pre (fgraph$vertices, vert_map, fgraph$gr_cols, from, from = TRUE)
+  to_index <-
+    fill_to_from_index_pre (fgraph$vertices, vert_map, fgraph$gr_cols, to, from = FALSE)
+  
+  if (fgraph$compound) {
+    vert_map <- fgraph$vert_map_compound
+    from_index <- remap_tf_index_for_tp (from_index, vert_map, from = TRUE)
+    to_index <- remap_tf_index_for_tp (to_index, vert_map, from = FALSE)
+  }
+  
+  return (list (from = from_index, to = to_index))
+}
+
 #' fill_to_from_index
 #'
 #' @noRd
 fill_to_from_index_pre <- function (vertices,
-                                vert_map,
-                                gr_cols,
-                                pts,
-                                from = TRUE) {
+                                    vert_map,
+                                    gr_cols,
+                                    pts,
+                                    from = TRUE) {
   
   id <- NULL
   if (is.null (pts)) {
@@ -148,9 +175,9 @@ fill_to_from_index_pre <- function (vertices,
 #' `id` values.
 #' @noRd
 get_index_id_cols_pre <- function (vertices,
-                               gr_cols,
-                               vert_map,
-                               pts) {
+                                   gr_cols,
+                                   vert_map,
+                                   pts) {
   
   index <- -1
   id <- NULL
@@ -198,9 +225,9 @@ get_index_id_cols_pre <- function (vertices,
 #'
 #' @noRd
 get_pts_index_pre <- function (vertices,
-                           gr_cols,
-                           vert_map,
-                           pts) {
+                               gr_cols,
+                               vert_map,
+                               pts) {
   
   if (!(is.matrix (pts) || is.data.frame (pts))) {
     if (!is.numeric (pts)) {
