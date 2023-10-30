@@ -351,6 +351,7 @@ process_graph <- function(graph, heap = "BHeap") {
     compound = compound,
     is_spatial = is_spatial,
     graph_compound = graph_compound, 
+    d = graph_compound$d,
     compound_junction_map = compound_junction_map,
     vert_map = vert_map,
     vert_map_compound = vert_map_compound))
