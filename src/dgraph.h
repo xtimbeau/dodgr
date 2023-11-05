@@ -26,7 +26,7 @@ typedef std::size_t size_t;
 class DGraphEdge {
     public:
         size_t source, target, edge_id; // edge_id only used in centrality
-        double dist, wt;
+        double dist, wt, time, dzplus; // inserts
         DGraphEdge *nextOut, *nextIn;
 };
 
@@ -72,7 +72,7 @@ class DGraph {
     
         void clear();
         void addNewEdge(size_t srcVertexNo, size_t destVertexNo,
-                double dist, double wt, size_t edge_id);
+                double dist, double wt, double time, double dzplus, size_t edge_id);
         bool edgeExists(size_t v, size_t w) const;
         bool reachable(size_t s) const;
         void print() const;

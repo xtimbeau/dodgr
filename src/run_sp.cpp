@@ -11,13 +11,15 @@ void inst_graph (std::shared_ptr<DGraph> g, size_t nedges,
         const std::vector <std::string>& from,
         const std::vector <std::string>& to,
         const std::vector <T>& dist,
-        const std::vector <T>& wt)
+        const std::vector <T>& wt,
+        const std::vector <T>& time, // insert
+        const std::vector <T>& dzplus) // insert
 {
     for (size_t i = 0; i < nedges; ++i)
     {
         size_t fromi = vert_map.at(from [i]);
         size_t toi = vert_map.at(to [i]);
-        g->addNewEdge (fromi, toi, dist [i], wt [i], i);
+        g->addNewEdge (fromi, toi, dist [i], wt [i], time[i], dzplus[i], i); // insert
     }
 }
 // # nocov end
@@ -99,6 +101,9 @@ struct OneDist : public RcppParallel::Worker
                         *run_sp::getHeapImpl (heap_type), g);
             std::vector <double> w (nverts);
             std::vector <double> d (nverts);
+            std::vector <double> t (nverts);
+            std::vector <double> dz (nverts);
+            
             std::vector <long int> prev (nverts);
 
             std::vector <double> heuristic (nverts, 0.0);
@@ -113,11 +118,11 @@ struct OneDist : public RcppParallel::Worker
                         dy = vy [j] - vy [from_i];
                     heuristic [j] = sqrt (dx * dx + dy * dy);
                 }
-                pathfinder->AStar (d, w, prev, heuristic, from_i, toi);
+                pathfinder->AStar (d, w, t, dz, prev, heuristic, from_i, toi);
             } else if (heap_type.find ("set") == std::string::npos)
-                pathfinder->Dijkstra (d, w, prev, from_i, toi);
+                pathfinder->Dijkstra (d, w, t, w, prev, from_i, toi);
             else
-                pathfinder->Dijkstra_set (d, w, prev, from_i);
+                pathfinder->Dijkstra_set (d, w, t, w, prev, from_i);
 
             for (size_t j = 0; j < toi.size (); j++)
             {
@@ -423,6 +428,8 @@ Rcpp::NumericMatrix rcpp_get_sp_dists_par (const Rcpp::DataFrame graph,
     const std::vector <std::string> to = graph ["to"];
     const std::vector <double> dist = graph ["d"];
     const std::vector <double> wt = graph ["d_weighted"];
+    const std::vector <double> wt = graph ["time"];
+    const std::vector <double> wt = graph ["dzplus"];
 
     const size_t nedges = static_cast <size_t> (graph.nrow ());
     std::map <std::string, size_t> vert_map;
@@ -439,22 +446,31 @@ Rcpp::NumericMatrix rcpp_get_sp_dists_par (const Rcpp::DataFrame graph,
     }
 
     std::shared_ptr <DGraph> g = std::make_shared <DGraph> (nverts);
-    inst_graph (g, nedges, vert_map, from, to, dist, wt);
+    inst_graph (g, nedges, vert_map, from, to, dist, wt, time, dzplus);
 
     Rcpp::NumericVector na_vec = Rcpp::NumericVector (nfrom * nto,
             Rcpp::NumericVector::get_na ());
     Rcpp::NumericMatrix dout (static_cast <int> (nfrom),
             static_cast <int> (nto), na_vec.begin ());
+    Rcpp::NumericMatrix tout (static_cast <int> (nfrom),
+            static_cast <int> (nto), na_vec.begin ());
+    Rcpp::NumericMatrix dzout (static_cast <int> (nfrom),
+            static_cast <int> (nto), na_vec.begin ());
 
     // Create parallel worker
     OneDist one_dist (RcppParallel::RVector <int> (fromi), toi,
             nverts, vx, vy, g, heap_type, is_spatial,
-            RcppParallel::RMatrix <double> (dout));
+            RcppParallel::RMatrix <double> (dout),
+            RcppParallel::RMatrix <double> (tout),
+            RcppParallel::RMatrix <double> (dzout)); // insert
 
     size_t chunk_size = run_sp::get_chunk_size (nfrom);
     RcppParallel::parallelFor (0, nfrom, one_dist, chunk_size);
     
-    return (dout);
+    return (List::create(
+        _["distance"] = dout,
+         _["time"] = tout,
+        _["dzplus"] = dzplus)); // insert
 }
 
 //' rcpp_get_sp_dists_nearest

@@ -67,7 +67,7 @@ void DGraph::initVertices()
  * with a corresponding distance of dist.
  */
 void DGraph::addNewEdge(size_t source, size_t target,
-        double dist, double wt, size_t edge_id)
+        double dist, double wt, double time, double dzplus, size_t edge_id)
 {
     DGraphEdge *newEdge = new DGraphEdge;
     newEdge->source = source;
@@ -75,6 +75,10 @@ void DGraph::addNewEdge(size_t source, size_t target,
     newEdge->edge_id = edge_id;
     newEdge->dist = dist;
     newEdge->wt = wt;
+    // inserts
+    newEdge->time = time;
+    newEdge->dzplus = dzplus;
+    // inserts
     newEdge->nextOut = nullptr;
     newEdge->nextIn = nullptr;
 

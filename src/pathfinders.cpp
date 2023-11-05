@@ -32,6 +32,8 @@ void PF::PathFinder::init(std::shared_ptr<const DGraph> g) {
 void PF::PathFinder::init_arrays (
         std::vector <double>& d,
         std::vector <double>& w,
+        std::vector<double>& t,
+        std::vector<double>& dz,
         std::vector <long int>& prev,
         bool *m_open_vec,
         bool *m_closed_vec,
@@ -40,9 +42,13 @@ void PF::PathFinder::init_arrays (
 {
     std::fill (w.begin (), w.end (), INFINITE_DOUBLE);
     std::fill (d.begin (), d.end (), INFINITE_DOUBLE);
+    std::fill (t.begin (), t.end (), INFINITE_DOUBLE);
+    std::fill (dz.begin (), dz.end (), INFINITE_DOUBLE);
     std::fill (prev.begin (), prev.end (), INFINITE_INT);
     w [v] = 0.0;
     d [v] = 0.0;
+    t [v] = 0.0;
+    dz [v] = 0.0;
     prev [v] = -1;
 
     std::fill (m_open_vec, m_open_vec + n, false);
@@ -53,6 +59,8 @@ void PF::PathFinder::init_arrays (
 void PF::PathFinder::scan_edges (const DGraphEdge *edge,
         std::vector<double>& d,
         std::vector<double>& w,
+        std::vector<double>& t,
+        std::vector<double>& dz,
         std::vector<long int>& prev,
         bool *m_open_vec,
         const bool *m_closed_vec,
@@ -65,6 +73,8 @@ void PF::PathFinder::scan_edges (const DGraphEdge *edge,
             double wt = w [v0] + edge->wt;
             if (wt < w [et]) {
                 d [et] = d [v0] + edge->dist;
+                t [et] = t [v0] + edge->time;
+                dz [et] = dz [v0] + edge->dzplus;
                 w [et] = wt;
                 prev [et] = static_cast <int> (v0);
 
@@ -85,6 +95,8 @@ void PF::PathFinder::scan_edges (const DGraphEdge *edge,
 void PF::PathFinder::scan_edges_heur (const DGraphEdge *edge,
         std::vector<double>& d,
         std::vector<double>& w,
+        std::vector<double>& t,
+        std::vector<double>& dz,
         std::vector<long int>& prev,
         bool *m_open_vec,
         const bool *m_closed_vec,
@@ -98,6 +110,8 @@ void PF::PathFinder::scan_edges_heur (const DGraphEdge *edge,
             double wt = w [v0] + edge->wt;
             if (wt < w [et]) {
                 d [et] = d [v0] + edge->dist;
+                t [et] = t [v0] + edge->time;
+                dz [et] = dz [v0] + edge->dzplus;
                 w [et] = wt;
                 prev [et] = static_cast <int> (v0);
 
@@ -122,6 +136,8 @@ void PF::PathFinder::scan_edges_heur (const DGraphEdge *edge,
 void PF::PathFinder::Dijkstra (
         std::vector<double>& d,
         std::vector<double>& w,
+        std::vector<double>& t,
+        std::vector<double>& dz,
         std::vector<long int>& prev,
         const size_t v0,
         const std::vector <size_t> &to_index)
@@ -131,7 +147,7 @@ void PF::PathFinder::Dijkstra (
     const size_t n = m_graph->nVertices();
     const std::vector<DGraphVertex>& vertices = m_graph->vertices();
 
-    PF::PathFinder::init_arrays (d, w, prev, m_open, m_closed, v0, n);
+    PF::PathFinder::init_arrays (d, w, t, dz, prev, m_open, m_closed, v0, n);
     m_heap->insert (v0, 0.0);
 
     size_t n_reached = 0;
@@ -148,7 +164,7 @@ void PF::PathFinder::Dijkstra (
         m_open [v] = false;
 
         edge = vertices [v].outHead;
-        scan_edges (edge, d, w, prev, m_open, m_closed, v);
+        scan_edges (edge, d, w, t, dz, prev, m_open, m_closed, v);
 
         if (is_target [v])
             n_reached++;
@@ -163,6 +179,8 @@ void PF::PathFinder::Dijkstra (
 void PF::PathFinder::DijkstraNearest (
         std::vector<double>& d,
         std::vector<double>& w,
+        std::vector<double>& t,
+        std::vector<double>& dz,
         std::vector<long int>& prev,
         const size_t v0,
         const std::vector <size_t> &to_index)
@@ -172,7 +190,7 @@ void PF::PathFinder::DijkstraNearest (
     const size_t n = m_graph->nVertices();
     const std::vector<DGraphVertex>& vertices = m_graph->vertices();
 
-    PF::PathFinder::init_arrays (d, w, prev, m_open, m_closed, v0, n);
+    PF::PathFinder::init_arrays (d, w, t, dz,Ò prev, m_open, m_closed, v0, n);
     m_heap->insert (v0, 0.0);
 
     bool *is_target = new bool [n];
@@ -187,7 +205,7 @@ void PF::PathFinder::DijkstraNearest (
         m_open [v] = false;
 
         edge = vertices [v].outHead;
-        scan_edges (edge, d, w, prev, m_open, m_closed, v);
+        scan_edges (edge, d, w, t, dz, prev, m_open, m_closed, v);
 
         if (is_target [v])
             break;
@@ -200,6 +218,8 @@ void PF::PathFinder::DijkstraNearest (
 void PF::PathFinder::DijkstraLimit (
         std::vector<double>& d,
         std::vector<double>& w,
+        std::vector<double>& t,
+        std::vector<double>& dz,
         std::vector<long int>& prev,
         const size_t v0,
         const double &dlim)
@@ -209,7 +229,7 @@ void PF::PathFinder::DijkstraLimit (
     const size_t n = m_graph->nVertices();
     const std::vector<DGraphVertex>& vertices = m_graph->vertices();
 
-    PF::PathFinder::init_arrays (d, w, prev, m_open, m_closed, v0, n);
+    PF::PathFinder::init_arrays (d, w, t, dz, prev, m_open, m_closed, v0, n);
     m_heap->insert (v0, 0.0);
 
     while (m_heap->nItems() > 0) {
@@ -233,13 +253,15 @@ void PF::PathFinder::DijkstraLimit (
         if (explore)
         {
             edge = vertices [v].outHead;
-            scan_edges (edge, d, w, prev, m_open, m_closed, v);
+            scan_edges (edge, d, w, t, dz, prev, m_open, m_closed, v);
         }
     } // end while nItems > 0
 }
 
 void PF::PathFinder::AStar (std::vector<double>& d,
         std::vector<double>& w,
+        std::vector<double>& t,
+        std::vector<double>& dz,
         std::vector<long int>& prev,
         const std::vector<double>& heur,
         const size_t v0,
@@ -250,7 +272,7 @@ void PF::PathFinder::AStar (std::vector<double>& d,
     const size_t n = m_graph->nVertices();
     const std::vector<DGraphVertex>& vertices = m_graph->vertices();
 
-    PF::PathFinder::init_arrays (d, w, prev, m_open, m_closed, v0, n);
+    PF::PathFinder::init_arrays (d, w, t, dz, prev, m_open, m_closed, v0, n);
     m_heap->insert (v0, heur [v0]);
 
     size_t n_reached = 0;
@@ -267,7 +289,7 @@ void PF::PathFinder::AStar (std::vector<double>& d,
         m_open [v] = false;
 
         edge = vertices [v].outHead;
-        scan_edges_heur (edge, d, w, prev, m_open, m_closed, v, heur);
+        scan_edges_heur (edge, d, w, t, dz, prev, m_open, m_closed, v, heur);
 
         if (is_target [v])
             n_reached++;
@@ -281,6 +303,8 @@ void PF::PathFinder::AStar (std::vector<double>& d,
 // instead of m_heap, and so all routines hard-coded here.
 void PF::PathFinder::Dijkstra_set (std::vector<double>& d,
         std::vector<double>& w,
+        std::vector<double>& t,
+        std::vector<double>& dz,
         std::vector<long int>& prev,
         size_t v0)
 {
@@ -289,7 +313,7 @@ void PF::PathFinder::Dijkstra_set (std::vector<double>& d,
     const size_t n = m_graph->nVertices();
     const std::vector<DGraphVertex>& vertices = m_graph->vertices();
 
-    PF::PathFinder::init_arrays (d, w, prev, m_open, m_closed, v0, n);
+    PF::PathFinder::init_arrays (d, w, t, dz, prev, m_open, m_closed, v0, n);
     m_heap->insert(v0, 0.0);
 
     edge_set.insert (DijkstraEdge (0.0, v0));
@@ -310,6 +334,8 @@ void PF::PathFinder::Dijkstra_set (std::vector<double>& d,
                 double wt = w [v] + edge->wt;
                 if (wt < w [et]) {
                     d [et] = d [v] + edge->dist;
+                    t [et] = t [v] + edge->time;
+                    dz [et] = dz [v] + edge->dzplus;
                     double wold = w [et];
                     w [et] = wt;
                     prev [et] = static_cast <int> (v);
