@@ -11,15 +11,13 @@ void inst_graph (std::shared_ptr<DGraph> g, size_t nedges,
         const std::vector <std::string>& from,
         const std::vector <std::string>& to,
         const std::vector <T>& dist,
-        const std::vector <T>& wt,
-        const std::vector <T>& time, // insert
-        const std::vector <T>& dzplus) // insert
+        const std::vector <T>& wt
 {
     for (size_t i = 0; i < nedges; ++i)
     {
         size_t fromi = vert_map.at(from [i]);
         size_t toi = vert_map.at(to [i]);
-        g->addNewEdge (fromi, toi, dist [i], wt [i], time[i], dzplus[i], i); // insert
+        g->addNewEdge (fromi, toi, dist [i], wt [i], i);
     }
 }
 // # nocov end
@@ -118,7 +116,7 @@ struct OneDist : public RcppParallel::Worker
                         dy = vy [j] - vy [from_i];
                     heuristic [j] = sqrt (dx * dx + dy * dy);
                 }
-                pathfinder->AStar (d, w, t, dz, prev, heuristic, from_i, toi);
+                pathfinder->AStar (d, w, prev, heuristic, from_i, toi);
             } else if (heap_type.find ("set") == std::string::npos)
                 pathfinder->Dijkstra (d, w, t, w, prev, from_i, toi);
             else

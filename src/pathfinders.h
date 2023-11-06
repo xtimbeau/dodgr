@@ -64,8 +64,6 @@ class PathFinder {
         void init_arrays (
                 std::vector<double>& d,
                 std::vector<double>& w,
-                std::vector<double>& t,
-                std::vector<double>& dz,
                 std::vector<long int>& prev,
                 bool *m_open_vec,
                 bool *m_closed_vec,
@@ -75,8 +73,6 @@ class PathFinder {
                 const DGraphEdge *edge,
                 std::vector<double>& d,
                 std::vector<double>& w,
-                std::vector<double>& t,
-                std::vector<double>& dz,
                 std::vector<long int>& prev,
                 bool *m_open_vec,
                 const bool *m_closed_vec,
@@ -85,8 +81,6 @@ class PathFinder {
                 const DGraphEdge *edge,
                 std::vector<double>& d,
                 std::vector<double>& w,
-                std::vector<double>& t,
-                std::vector<double>& dz,
                 std::vector<long int>& prev,
                 bool *m_open_vec,
                 const bool *m_closed_vec,
@@ -97,8 +91,6 @@ class PathFinder {
                 const DGraphEdge *edge,
                 std::vector<double>& d,
                 std::vector<double>& w,
-                std::vector<double>& t,
-                std::vector<double>& dz,
                 std::vector<long int>& prev,
                 bool *m_open_vec,
                 const bool *m_closed_vec,
@@ -109,8 +101,6 @@ class PathFinder {
                 const DGraphEdge *edge,
                 std::vector<double>& d,
                 std::vector<double>& w,
-                std::vector<double>& t,
-                std::vector<double>& dz,
                 std::vector<long int>& prev,
                 bool *m_open_vec,
                 const bool *m_closed_vec,
@@ -119,8 +109,6 @@ class PathFinder {
         void Dijkstra (
                 std::vector<double>& d,
                 std::vector<double>& w,
-                std::vector<double>& t,
-                std::vector<double>& dz,
                 std::vector<long int>& prev,
                 const size_t v0,
                 const std::vector <size_t> &to_index);
@@ -144,8 +132,6 @@ class PathFinder {
                 const double &dlim);
         void AStar (std::vector<double>& d,
                 std::vector<double>& w,
-                std::vector<double>& t,
-                std::vector<double>& dz,
                 std::vector<long int>& prev,
                 const std::vector<double>& heur,
                 const size_t v0,
@@ -158,8 +144,6 @@ class PathFinder {
                 const std::vector <size_t> &to_index);
         void Dijkstra_set (std::vector <double>& d,
                 std::vector<double>& w,
-                std::vector<double>& t,
-                std::vector<double>& dz,
                 std::vector<long int>& prev,
                 size_t v0);
         void Centrality_vertex (
