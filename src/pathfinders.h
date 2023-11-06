@@ -77,6 +77,26 @@ class PathFinder {
                 bool *m_open_vec,
                 const bool *m_closed_vec,
                 const size_t &v0);
+        void init_arrays_tdz (
+                std::vector<double>& d,
+                std::vector<double>& w,
+                std::vector<double>& t,
+                std::vector<double>& dz,
+                std::vector<long int>& prev,
+                bool *m_open_vec,
+                bool *m_closed_vec,
+                const size_t v,
+                const size_t n);
+        void scan_edges_tdz (
+                const DGraphEdge *edge,
+                std::vector<double>& d,
+                std::vector<double>& w,
+                std::vector<double>& t,
+                std::vector<double>& dz,
+                std::vector<long int>& prev,
+                bool *m_open_vec,
+                const bool *m_closed_vec,
+                const size_t &v0);        
         void scan_edges_heur ( // with A* heuristic
                 const DGraphEdge *edge,
                 std::vector<double>& d,
@@ -86,6 +106,17 @@ class PathFinder {
                 const bool *m_closed_vec,
                 const size_t &v0,
                 const std::vector<double> &heur);
+        void scan_edges_heur_tdz ( // with A* heuristic
+                const DGraphEdge *edge,
+                std::vector<double>& d,
+                std::vector<double>& w,
+                std::vector<double>& t,
+                std::vector<double>& dz,
+                std::vector<long int>& prev,
+                bool *m_open_vec,
+                const bool *m_closed_vec,
+                const size_t &v0,
+                const std::vector<double> &heur);        
         // with A* heuristic for dists-categorical
         void scan_edge_types_heur (
                 const DGraphEdge *edge,
@@ -112,6 +143,16 @@ class PathFinder {
                 std::vector<long int>& prev,
                 const size_t v0,
                 const std::vector <size_t> &to_index);
+        
+        void Dijkstra_tdz (
+                std::vector<double>& d,
+                std::vector<double>& w,
+                std::vector<double>& t,
+                std::vector<double>& dz,
+                std::vector<long int>& prev,
+                const size_t v0,
+                const std::vector <size_t> &to_index);
+        
         void DijkstraNearest (
                 std::vector<double>& d,
                 std::vector<double>& w,
@@ -136,6 +177,16 @@ class PathFinder {
                 const std::vector<double>& heur,
                 const size_t v0,
                 const std::vector <size_t> &to_index);
+
+        void AStar_tdz (std::vector<double>& d,
+                std::vector<double>& w,
+                std::vector<double>& t,
+                std::vector<double>& dz,
+                std::vector<long int>& prev,
+                const std::vector<double>& heur,
+                const size_t v0,
+                const std::vector <size_t> &to_index);
+
         void AStarEdgeType (std::vector<double>& d,
                 std::vector<double>& w,
                 std::vector<long int>& prev,
@@ -144,6 +195,12 @@ class PathFinder {
                 const std::vector <size_t> &to_index);
         void Dijkstra_set (std::vector <double>& d,
                 std::vector<double>& w,
+                std::vector<long int>& prev,
+                size_t v0);
+        void Dijkstra_set_tdz (std::vector <double>& d,
+                std::vector<double>& w,
+                std::vector<double>& t,
+                std::vector<double>& dz,
                 std::vector<long int>& prev,
                 size_t v0);
         void Centrality_vertex (

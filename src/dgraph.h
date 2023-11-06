@@ -26,10 +26,9 @@ typedef std::size_t size_t;
 class DGraphEdge {
     public:
         size_t source, target, edge_id; // edge_id only used in centrality
-        double dist, wt;
+        double dist, wt, time, dzplus;
         DGraphEdge *nextOut, *nextIn;
 };
-
 /* --- Directed graph vertex class ---
  * Each vertex object has an associated linked lists of edge objects
  * representing the outgoing and incoming edges of that vertex.  The member
@@ -58,6 +57,7 @@ class DGraphVertex {
  * print()      - Prints a text representation of the graph to the standard
  *                output.
  */
+
 class DGraph {
     public:
         DGraph(size_t n);
@@ -73,6 +73,8 @@ class DGraph {
         void clear();
         void addNewEdge(size_t srcVertexNo, size_t destVertexNo,
                 double dist, double wt, size_t edge_id);
+        void addNewEdge_tdz(size_t srcVertexNo, size_t destVertexNo,
+                double dist, double wt, double time, double dzplus, size_t edge_id);
         bool edgeExists(size_t v, size_t w) const;
         bool reachable(size_t s) const;
         void print() const;
@@ -82,7 +84,6 @@ class DGraph {
         std::vector<DGraphVertex> m_vertices;
   
 };
-
 
 /*---------------------------------------------------------------------------*/
 #endif

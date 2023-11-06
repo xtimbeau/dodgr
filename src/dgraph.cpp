@@ -75,6 +75,43 @@ void DGraph::addNewEdge(size_t source, size_t target,
     newEdge->edge_id = edge_id;
     newEdge->dist = dist;
     newEdge->wt = wt;
+    newEdge->time = 0;
+    newEdge->dzplus = 0;
+    newEdge->nextOut = nullptr;
+    newEdge->nextIn = nullptr;
+
+    DGraphVertex *vertex = &m_vertices[source];
+    if(vertex->outTail) {
+        vertex->outTail->nextOut = newEdge;
+    }
+    else {
+        vertex->outHead = newEdge;
+    }
+    vertex->outTail = newEdge;
+    vertex->outSize++;
+
+    vertex = &m_vertices[target];
+    if(vertex->inTail) {
+        vertex->inTail->nextIn = newEdge;
+    }
+    else {
+        vertex->inHead = newEdge;
+    }
+    vertex->inTail = newEdge;
+    vertex->inSize++;
+}
+
+void DGraph::addNewEdge_tdz(size_t source, size_t target,
+        double dist, double wt, double time, double dzplus, size_t edge_id)
+{
+    DGraphEdge *newEdge = new DGraphEdge;
+    newEdge->source = source;
+    newEdge->target = target;
+    newEdge->edge_id = edge_id;
+    newEdge->dist = dist;
+    newEdge->wt = wt;
+    newEdge->time = time;
+    newEdge->dzplus = dzplus;
     newEdge->nextOut = nullptr;
     newEdge->nextIn = nullptr;
 
@@ -163,3 +200,5 @@ void DGraph::print() const
         Rcpp::Rcout << std::endl;
     }
 }
+
+

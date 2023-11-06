@@ -75,6 +75,10 @@ dodgr_dists_pre <- function (proc_g,
   }
   # tictoc::toc()
   
+  # on ajoute dzplus si fourni
+  if("dzplus"%in%names(proc_g$graph_compound))
+    graph$dzplus <- proc_g$graph_compound$dzplus
+  
   d <- calculate_distmat (
     graph,
     vert_map,

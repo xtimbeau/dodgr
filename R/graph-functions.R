@@ -135,8 +135,7 @@ convert_graph <- function (graph, gr_cols) {
 
     keep_cols <- c (
         "edge_id", "from", "to", "d", "d_weighted",
-        "time", "time_weighted"
-    )
+        "time", "time_weighted", "dzplus")
     index <- do.call (c, gr_cols [keep_cols])
     index <- index [!is.na (index)]
     graph <- graph [, index]

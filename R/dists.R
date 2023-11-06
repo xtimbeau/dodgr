@@ -10,6 +10,7 @@
 #' rather than shortest routes (see Notes).
 #' @param pairwise If `TRUE`, calculate distances only between the ordered
 #' pairs of `from` and `to`.
+#' @param tdz If `TRUE`, calculate distances, time and dzplus.
 #' @param heap Type of heap to use in priority queue. Options include
 #' Fibonacci Heap (default; `FHeap`), Binary Heap (`BHeap`),
 #' `Trinomial Heap (`TriHeap`), Extended Trinomial Heap
@@ -114,6 +115,7 @@ dodgr_dists <- function (graph,
                          to = NULL,
                          shortest = TRUE,
                          pairwise = FALSE,
+                         tdz = FALSE,
                          heap = "BHeap",
                          parallel = TRUE,
                          quiet = TRUE) {
@@ -164,7 +166,8 @@ dodgr_dists <- function (graph,
     heap,
     is_spatial,
     parallel,
-    pairwise
+    pairwise,
+    tdz
   )
   
   
@@ -481,7 +484,8 @@ calculate_distmat <- function (graph,
                                heap,
                                is_spatial,
                                parallel = TRUE,
-                               pairwise = FALSE) {
+                               pairwise = FALSE,
+                               tdz = FALSE) {
   
   flip <- FALSE
   if (length (from_index$index) > length (to_index$index)) {
@@ -503,15 +507,24 @@ calculate_distmat <- function (graph,
         is_spatial
       )
     } else {
+      if(!tdz) {
+        d <- rcpp_get_sp_dists_par (
+          graph,
+          vert_map,
+          from_index$index,
+          to_index$index,
+          heap,
+          is_spatial)
+      } else {
+        d <- rcpp_get_sp_dists_par_tdz (
+          graph,
+          vert_map,
+          from_index$index,
+          to_index$index,
+          heap,
+          is_spatial)
+      }
       
-      d <- rcpp_get_sp_dists_par (
-        graph,
-        vert_map,
-        from_index$index,
-        to_index$index,
-        heap,
-        is_spatial
-      )
     }
   } else {
     d <- rcpp_get_sp_dists (
@@ -522,29 +535,63 @@ calculate_distmat <- function (graph,
       heap
     )
   }
-  
-  if (!pairwise) {
-    if (!is.null (from_index$id)) {
-      rownames (d) <- from_index$id
-    } else {
-      rownames (d) <- vert_map$vert
-    }
-    if (!is.null (to_index$id)) {
-      colnames (d) <- to_index$id
-    } else {
-      colnames (d) <- vert_map$vert
-    }
-    
-    if (get_turn_penalty (graph) > 0) {
+  if(!tdz) {
+    if (!pairwise) {
+      if (!is.null (from_index$id)) {
+        rownames (d) <- from_index$id
+      } else {
+        rownames (d) <- vert_map$vert
+      }
+      if (!is.null (to_index$id)) {
+        colnames (d) <- to_index$id
+      } else {
+        colnames (d) <- vert_map$vert
+      }
       
-      rownames (d) <- gsub ("\\_(start|end)$", "", rownames (d))
-      colnames (d) <- gsub ("\\_(start|end)$", "", colnames (d))
+      if (get_turn_penalty (graph) > 0) {
+        
+        rownames (d) <- gsub ("\\_(start|end)$", "", rownames (d))
+        colnames (d) <- gsub ("\\_(start|end)$", "", colnames (d))
+      }
+      
+      if (flip)
+        d <- t (d)
     }
-    
-    if (flip) {
-      d <- t (d)
+  } else {
+    if (!pairwise) {
+      if (!is.null (from_index$id)) {
+        rownames (d$distance) <- from_index$id
+        rownames (d$time) <- from_index$id
+        rownames (d$dzplus) <- from_index$id
+      } else {
+        rownames (d$distance) <- vert_map$vert
+        rownames (d$time) <- vert_map$vert
+        rownames (d$dzplus) <- vert_map$vert
+      }
+      if (!is.null (to_index$id)) {
+        colnames (d$distance) <- to_index$id
+        colnames (d$time) <- to_index$id
+        colnames (d$dzplus) <- to_index$id
+      } else {
+        colnames (d$distance) <- vert_map$vert
+        colnames (d$time) <- vert_map$vert
+        colnames (d$dzplus) <- vert_map$vert
+      }
+      
+      if (get_turn_penalty (graph) > 0) {
+        
+        rownames (d$distance) <- gsub ("\\_(start|end)$", "", rownames (d$distance))
+        colnames (d$distance) <- gsub ("\\_(start|end)$", "", colnames (d$distance))
+        rownames (d$time) <- gsub ("\\_(start|end)$", "", rownames (d$time))
+        colnames (d$time) <- gsub ("\\_(start|end)$", "", colnames (d$time))
+        rownames (d$dzplus) <- gsub ("\\_(start|end)$", "", rownames (d$dzplus))
+        colnames (d$dzplus) <- gsub ("\\_(start|end)$", "", colnames (d$dzplus))
+        
+      }
+      
+      if (flip)
+        d <- map(d, t)
     }
   }
-  
   return (d)
 }

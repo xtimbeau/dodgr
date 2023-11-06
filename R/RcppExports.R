@@ -320,6 +320,13 @@ rcpp_get_sp_dists_par <- function(graph, vert_map_in, fromi, toi_in, heap_type, 
     .Call(`_dodgr_rcpp_get_sp_dists_par`, graph, vert_map_in, fromi, toi_in, heap_type, is_spatial)
 }
 
+#' rcpp_get_sp_dists_par_tdz
+#'
+#' @noRd
+rcpp_get_sp_dists_par_tdz <- function(graph, vert_map_in, fromi, toi_in, heap_type, is_spatial) {
+    .Call(`_dodgr_rcpp_get_sp_dists_par_tdz`, graph, vert_map_in, fromi, toi_in, heap_type, is_spatial)
+}
+
 #' rcpp_get_sp_dists_nearest
 #'
 #' @noRd

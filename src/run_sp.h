@@ -68,6 +68,13 @@ Rcpp::NumericMatrix rcpp_get_sp_dists_par (const Rcpp::DataFrame graph,
         const std::string& heap_type,
         const bool is_spatial);
 
+Rcpp::List rcpp_get_sp_dists_par_tdz (const Rcpp::DataFrame graph,
+        const Rcpp::DataFrame vert_map_in,
+        Rcpp::IntegerVector fromi,
+        Rcpp::IntegerVector toi_in,
+        const std::string& heap_type,
+        const bool is_spatial);
+
 Rcpp::NumericVector rcpp_get_sp_dists_nearest (const Rcpp::DataFrame graph,
         const Rcpp::DataFrame vert_map_in,
         Rcpp::IntegerVector fromi,
