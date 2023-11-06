@@ -35,7 +35,8 @@ dodgr_dists_pre <- function (proc_g,
                              pairwise = FALSE,
                              parallel = TRUE,
                              quiet = TRUE,
-                             to_from_indices = NULL) {
+                             to_from_indices = NULL,
+                             tdz = FALSE) {
   # tictoc::tic()
   if(is.null(to_from_indices))
     to_from_indices <- to_from_index_with_tp_pre(proc_g, from, to)
@@ -87,7 +88,8 @@ dodgr_dists_pre <- function (proc_g,
     proc_g$heap,
     proc_g$is_spatial,
     parallel,
-    pairwise
+    pairwise, 
+    tdz
   )
   
   if (!quiet) {
