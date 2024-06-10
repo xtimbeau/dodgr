@@ -368,7 +368,7 @@ times_by_incline <- function (graph, wt_profile) {
     # to 0.11, it needs to be multiplied by 0.11 / 0.01, or 11
     if ("dz" %in% names (graph)) {
       graph$time <- graph$time * bikbler(graph$dz/graph$d)
-      graph$time_weighted <- graph$time_weighted * bikbler(graph$dz/graph$d) ^2
+      graph$time_weighted <- graph$time_weighted * bikbler(graph$dz/graph$d)^2
     }
     # ... TODO: Downhill
     # http://www.sportsci.org/jour/9804/dps.html
